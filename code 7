@@ -1,0 +1,357 @@
+```bash id="u84o2y"
+# Step 1: Update Ubuntu packages
+sudo apt update
+
+# Step 2: Install Jenkins
+sudo apt install jenkins -y
+
+# Step 3: Start Jenkins service
+sudo systemctl start jenkins
+
+# Step 4: Enable Jenkins service
+sudo systemctl enable jenkins
+
+# Step 5: Open Jenkins in browser
+http://localhost:8080
+
+# Step 6: Get Jenkins admin password
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+```
+
+---
+
+# Install Required Jenkins Plugins
+
+## Step 7: Open Plugin Manager
+
+Go to:
+
+```text id="ybywqe"
+Manage Jenkins → Plugins
+```
+
+Install these plugins:
+
+```text id="v0wgjw"
+1. Email Extension Plugin
+2. Mailer Plugin
+3. Slack Notification Plugin (optional communication channel)
+```
+
+Restart Jenkins after installation.
+
+---
+
+# Configure Email Notification
+
+## Step 8: Open Jenkins System Configuration
+
+Go to:
+
+```text id="bt4sao"
+Manage Jenkins → System
+```
+
+---
+
+## Step 9: Configure SMTP Mail Server
+
+Inside “E-mail Notification” section enter:
+
+```text id="9e6ixf"
+SMTP Server: smtp.gmail.com
+Use SMTP Authentication: YES
+Username: yourgmail@gmail.com
+Password: Gmail App Password
+Use SSL: YES
+SMTP Port: 465
+```
+
+---
+
+## Step 10: Generate Gmail App Password
+
+Open:
+
+[Google Account Security](https://myaccount.google.com/security?utm_source=chatgpt.com)
+
+Steps:
+
+```text id="4l2dms"
+1. Enable 2-Step Verification
+2. Open App Passwords
+3. Generate App Password
+4. Copy generated password
+5. Use it in Jenkins SMTP password field
+```
+
+---
+
+## Step 11: Test Email Configuration
+
+Inside Jenkins:
+
+```text id="1b2k7g"
+Manage Jenkins → System → Test Configuration
+```
+
+Enter recipient email and click:
+
+```text id="1v8izx"
+Test configuration by sending test e-mail
+```
+
+---
+
+# Create Jenkins Pipeline Project
+
+## Step 12: Create New Pipeline Job
+
+```text id="qybvzk"
+Dashboard → New Item → Pipeline → OK
+```
+
+---
+
+# Configure Build Email Notification
+
+## Step 13: Add Post Build Action
+
+Inside project:
+
+```text id="f7dclq"
+Post Build Actions → Editable Email Notification
+```
+
+Fill details:
+
+```text id="yx6p8h"
+Project Recipient List: yourgmail@gmail.com
+Triggers:
+✔ Success
+✔ Failure
+✔ Always
+```
+
+Save project.
+
+---
+
+# Create Jenkinsfile
+
+## Step 14: Create Jenkinsfile in Project
+
+```bash id="r9fd4g"
+nano Jenkinsfile
+```
+
+Add this pipeline code:
+
+```groovy id="3icdfg"
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Build') {
+            steps {
+                echo 'Building Application'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running Test Cases'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying Application'
+            }
+        }
+    }
+
+    post {
+
+        success {
+            mail to: 'yourgmail@gmail.com',
+            subject: 'Jenkins Build Success',
+            body: 'Build completed successfully.'
+        }
+
+        failure {
+            mail to: 'yourgmail@gmail.com',
+            subject: 'Jenkins Build Failed',
+            body: 'Build failed. Check Jenkins console output.'
+        }
+    }
+}
+```
+
+---
+
+# Integrate Communication Channel (Slack)
+
+## Step 15: Create Slack Workspace
+
+Open:
+
+[Slack](https://slack.com?utm_source=chatgpt.com)
+
+Create workspace and channel.
+
+---
+
+## Step 16: Create Slack App
+
+Open:
+
+[Slack API Apps](https://api.slack.com/apps?utm_source=chatgpt.com)
+
+Steps:
+
+```text id="prc4k3"
+1. Create New App
+2. Enable Incoming Webhooks
+3. Create Webhook URL
+4. Copy Webhook URL
+```
+
+---
+
+# Configure Slack in Jenkins
+
+## Step 17: Configure Slack Notification
+
+Go to:
+
+```text id="48rt9h"
+Manage Jenkins → System → Slack
+```
+
+Enter:
+
+```text id="gk2l3v"
+Workspace Name
+Credential/Webhook URL
+Channel Name
+```
+
+Save configuration.
+
+---
+
+# Add Slack Notification in Jenkinsfile
+
+## Step 18: Update Jenkinsfile
+
+```groovy id="h8h9k2"
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Build') {
+            steps {
+                echo 'Building Application'
+            }
+        }
+    }
+
+    post {
+
+        success {
+            slackSend (
+                channel: '#general',
+                message: 'Build Successful'
+            )
+        }
+
+        failure {
+            slackSend (
+                channel: '#general',
+                message: 'Build Failed'
+            )
+        }
+    }
+}
+```
+
+---
+
+# Step 19: Push Project to GitHub
+
+```bash id="1h7pqk"
+# Initialize Git
+git init
+
+# Add files
+git add .
+
+# Commit changes
+git commit -m "Added Jenkins Notifications"
+
+# Add GitHub repository
+git remote add origin https://github.com/username/repository.git
+
+# Push project
+git push -u origin master
+```
+
+---
+
+# Step 20: Run Jenkins Build
+
+Inside Jenkins:
+
+```text id="t4d3b4"
+Click Build Now
+```
+
+Jenkins will:
+
+1. Execute pipeline
+2. Send email notification
+3. Send Slack notification
+4. Show build status
+
+---
+
+# Important Viva Comments
+
+### What is Jenkins?
+
+Jenkins is a CI/CD automation tool used for build and deployment.
+
+### Why Email Notification?
+
+To notify developers about build success or failure.
+
+### Why Slack Integration?
+
+To provide real-time project communication and build updates.
+
+### What is SMTP?
+
+Simple Mail Transfer Protocol used for sending emails.
+
+### What is Post Build Action?
+
+Action performed after Jenkins build completion.
+
+### Notification Types
+
+```text id="zodjqw"
+1. Success Notification
+2. Failure Notification
+3. Always Notification
+```
+
+### Important Jenkins Plugins
+
+```text id="a2npfz"
+1. Mailer Plugin
+2. Email Extension Plugin
+3. Slack Notification Plugin
+```
