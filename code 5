@@ -1,0 +1,274 @@
+```bash
+# Step 1: Update Ubuntu packages
+sudo apt update
+
+# Step 2: Install Java for Jenkins
+sudo apt install openjdk-17-jdk -y
+
+# Step 3: Check Java version
+java --version
+
+# Step 4: Install Jenkins repository key
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
+/usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+# Step 5: Add Jenkins repository
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+/etc/apt/sources.list.d/jenkins.list > /dev/null
+
+# Step 6: Update packages again
+sudo apt update
+
+# Step 7: Install Jenkins
+sudo apt install jenkins -y
+
+# Step 8: Start Jenkins service
+sudo systemctl start jenkins
+
+# Step 9: Enable Jenkins at boot
+sudo systemctl enable jenkins
+
+# Step 10: Check Jenkins status
+sudo systemctl status jenkins
+
+# Step 11: Install Docker
+sudo apt install docker.io -y
+
+# Step 12: Start Docker service
+sudo systemctl start docker
+
+# Step 13: Enable Docker service
+sudo systemctl enable docker
+
+# Step 14: Add Jenkins user to Docker group
+sudo usermod -aG docker jenkins
+
+# Step 15: Restart Jenkins service
+sudo systemctl restart jenkins
+
+# Step 16: Open Jenkins in browser
+http://localhost:8080
+
+# Step 17: Get Jenkins admin password
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+```
+
+---
+
+# Create Application Project
+
+```bash
+# Step 18: Create project folder
+mkdir myapp
+
+# Step 19: Move into project folder
+cd myapp
+
+# Step 20: Create Python application
+nano app.py
+```
+
+```python
+# Simple Python program
+print("Hello from Jenkins and Docker")
+```
+
+---
+
+# Create Dockerfile
+
+```bash
+# Step 21: Create Dockerfile
+nano Dockerfile
+```
+
+```Dockerfile
+# Use Ubuntu base image
+FROM ubuntu:latest
+
+# Install Python
+RUN apt update && apt install -y python3
+
+# Set working directory
+WORKDIR /app
+
+# Copy files into container
+COPY . /app
+
+# Run application
+CMD ["python3", "app.py"]
+```
+
+---
+
+# Create Jenkinsfile
+
+```bash
+# Step 22: Create Jenkinsfile
+nano Jenkinsfile
+```
+
+```groovy
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "yourdockerhubusername/myapp"
+    }
+
+    stages {
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $IMAGE_NAME .'
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+
+                    sh 'docker push $IMAGE_NAME'
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+# Push Project to GitHub
+
+```bash
+# Step 23: Initialize Git repository
+git init
+
+# Step 24: Add files to Git
+git add .
+
+# Step 25: Commit files
+git commit -m "Initial Jenkins Docker Project"
+
+# Step 26: Connect GitHub repository
+git remote add origin https://github.com/username/repository.git
+
+# Step 27: Push code to GitHub
+git push -u origin master
+```
+
+---
+
+# Configure Jenkins
+
+## Step 28: Install Suggested Plugins
+
+* Open Jenkins dashboard
+* Install suggested plugins
+
+---
+
+## Step 29: Add DockerHub Credentials
+
+* Go to:
+
+  * Manage Jenkins
+  * Credentials
+  * Global
+  * Add Credentials
+
+### Enter:
+
+* Username → DockerHub username
+* Password → DockerHub password
+* ID → `dockerhub`
+
+Save credentials.
+
+---
+
+## Step 30: Create Jenkins Pipeline Job
+
+* Dashboard → New Item
+* Enter job name
+* Select Pipeline
+* Click OK
+
+---
+
+## Step 31: Connect GitHub Repository
+
+Inside Pipeline section:
+
+* Pipeline Definition → Pipeline script from SCM
+* SCM → Git
+* Repository URL → GitHub repository link
+* Branch → main/master
+
+Save.
+
+---
+
+## Step 32: Build Jenkins Project
+
+* Click “Build Now”
+
+Jenkins will:
+
+1. Pull code from GitHub
+2. Read Jenkinsfile
+3. Build Docker image
+4. Push image to DockerHub
+
+---
+
+# Verify DockerHub Image
+
+Open DockerHub account.
+
+You will see:
+
+```text
+yourdockerhubusername/myapp
+```
+
+---
+
+# Important Viva Comments
+
+### What is Jenkins?
+
+Jenkins is a Continuous Integration and Continuous Deployment (CI/CD) tool.
+
+### What is Jenkinsfile?
+
+A file containing pipeline workflow automation steps.
+
+### What is CI/CD?
+
+* CI → Continuous Integration
+* CD → Continuous Deployment
+
+### Why Docker with Jenkins?
+
+Docker creates portable containers and Jenkins automates build and deployment.
+
+### Pipeline Stages Used
+
+1. Build Docker Image
+2. Push Docker Image to DockerHub
+
+### Important Commands
+
+```bash
+docker build -t image_name .
+docker push image_name
+git push origin master
+```
