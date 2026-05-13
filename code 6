@@ -1,0 +1,325 @@
+```bash
+# Step 1: Update Ubuntu packages
+sudo apt update
+
+# Step 2: Install Java Development Kit
+sudo apt install openjdk-17-jdk -y
+
+# Step 3: Check Java version
+java --version
+
+# Step 4: Install Maven
+sudo apt install maven -y
+
+# Step 5: Check Maven version
+mvn -version
+
+# Step 6: Create Maven project using archetype
+mvn archetype:generate -DgroupId=com.example \
+-DartifactId=myapp \
+-DarchetypeArtifactId=maven-archetype-quickstart \
+-DinteractiveMode=false
+
+# Step 7: Move into project folder
+cd myapp
+
+# Step 8: View project structure
+ls
+```
+
+---
+
+# Maven Project Structure
+
+```text
+myapp
+ ├── pom.xml
+ └── src
+     ├── main/java
+     └── test/java
+```
+
+---
+
+# Step 9: Open pom.xml File
+
+```bash
+nano pom.xml
+```
+
+Replace with this complete configuration:
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- Maven model version -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Project group name -->
+    <groupId>com.example</groupId>
+
+    <!-- Project artifact name -->
+    <artifactId>myapp</artifactId>
+
+    <!-- Project version -->
+    <version>1.0-SNAPSHOT</version>
+
+    <!-- Packaging type -->
+    <packaging>jar</packaging>
+
+    <!-- Project dependencies -->
+    <dependencies>
+
+        <!-- JUnit dependency for testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Spring Core dependency -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.3.30</version>
+        </dependency>
+
+        <!-- Logging dependency -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.9</version>
+        </dependency>
+
+    </dependencies>
+
+    <!-- Build plugins -->
+    <build>
+        <plugins>
+
+            <!-- Compiler plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+
+            <!-- Surefire plugin for testing -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
+```
+
+---
+
+# Step 10: Save File
+
+```text
+CTRL + X
+Press Y
+Press ENTER
+```
+
+---
+
+# Step 11: Build Maven Project
+
+```bash
+mvn clean install
+```
+
+### Explanation
+
+* `clean` → removes old build files
+* `install` → compiles, tests, packages, and installs jar
+
+---
+
+# Step 12: Check Build Status
+
+If successful:
+
+```text
+BUILD SUCCESS
+```
+
+---
+
+# Step 13: Run Tests
+
+```bash
+mvn test
+```
+
+---
+
+# Step 14: Package Application
+
+```bash
+mvn package
+```
+
+Generated JAR file location:
+
+```text
+target/myapp-1.0-SNAPSHOT.jar
+```
+
+---
+
+# Step 15: Run Application
+
+```bash
+java -cp target/myapp-1.0-SNAPSHOT.jar com.example.App
+```
+
+---
+
+# CI/CD Integration Steps
+
+## Step 16: Create Jenkinsfile
+
+```bash
+nano Jenkinsfile
+```
+
+```groovy
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven'
+    }
+
+    stages {
+
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/username/repository.git'
+            }
+        }
+
+        stage('Build Maven Project') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Package Application') {
+            steps {
+                sh 'mvn package'
+            }
+        }
+    }
+}
+```
+
+---
+
+# Step 17: Push Project to GitHub
+
+```bash
+# Initialize Git
+git init
+
+# Add project files
+git add .
+
+# Commit project
+git commit -m "Maven CI/CD Project"
+
+# Add GitHub repository
+git remote add origin https://github.com/username/repository.git
+
+# Push project to GitHub
+git push -u origin master
+```
+
+---
+
+# Step 18: Configure Jenkins Pipeline
+
+* Open Jenkins
+* Create New Item
+* Select Pipeline
+* Choose:
+
+  * Pipeline script from SCM
+  * SCM → Git
+  * Enter GitHub repository URL
+* Save project
+
+---
+
+# Step 19: Build Pipeline
+
+Click:
+
+```text
+Build Now
+```
+
+Jenkins will:
+
+1. Clone GitHub repository
+2. Download dependencies
+3. Build Maven project
+4. Run test cases
+5. Create JAR package
+
+---
+
+# Important Viva Comments
+
+### What is Maven?
+
+Maven is a build automation and dependency management tool for Java projects.
+
+### What is pom.xml?
+
+`pom.xml` is the main Maven configuration file containing dependencies and plugins.
+
+### What are Dependencies?
+
+External libraries required for the application.
+
+### What is CI/CD?
+
+* CI → Continuous Integration
+* CD → Continuous Deployment
+
+### Maven Lifecycle Commands
+
+```bash
+mvn clean
+mvn compile
+mvn test
+mvn package
+mvn install
+```
+
+### What is Jenkins Pipeline?
+
+Automation workflow for build, test, and deployment process.
