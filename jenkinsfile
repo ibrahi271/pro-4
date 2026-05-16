@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+    
+    environment{
+        DOCKER_USER  = 'ibrahi271'
+        IMAGE_NAME   = 'my-python-app5'
+        IMAGE_TAG    = "${env.BUILD_NUMBER}"
+        FULL_IMAGE   = "${DOCKER_USER}/${IMAGE_NAME}"
+    }
+
+    stages {
+        stage('Build Docker Image') {
+            steps {
+              
+                sh "docker build -t ${FULL_IMAGE}:${IMAGE_TAG} -t ${FULL_IMAGE}:latest ."
+            }
+        }
+
+        stage('Login to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                }
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                sh "docker push ${FULL_IMAGE}:${IMAGE_TAG}"
+                sh "docker push ${FULL_IMAGE}:latest"
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                // Using double quotes for Groovy variable interpolation
+                sh """
+                docker stop myapp-container || true
+                docker rm myapp-container || true
+                docker run -d -p 5000:5000 --name myapp-container ${FULL_IMAGE}:latest
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            // Logout to keep the agent secure
+            sh 'docker logout'
+        }
+        success {
+            echo "Deployment of ${FULL_IMAGE}:${IMAGE_TAG} was successful!"
+        }
+    }
+}
